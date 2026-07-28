@@ -1,36 +1,36 @@
 name: 'moon - CI run reports'
 author: 'step-security'
-description: 'Reports the run results of `moon ci` to a pull request.'
+description: 'Publishes moon CI run results as a pull request comment and workflow summary.'
 inputs:
   access-token:
-    description: 'GitHub access token to post comments.'
+    description: 'GitHub token used to post run report comments on pull requests.'
     required: true
   limit:
-    description: 'Maximum number of actions to display in the report table.'
+    description: 'Maximum number of actions to show in the report table before overflow.'
     default: '20'
   matrix:
-    description: 'Metadata about the current job matrix in JSON.'
+    description: 'Job matrix data as a JSON string, used to distinguish parallel builds.'
     default: ''
   skip-comment:
-    description: 'Skip creating a comment. Useful alongside `report` output.'
+    description: 'Set to true to skip PR comment creation. Pairs well with the `report` output.'
     default: 'false'
   slow-threshold:
-    description: 'Number of seconds before an action is to be considered slow.'
+    description: 'Duration in seconds beyond which an action is marked as slow.'
     default: '120'
   sort-by:
-    description: 'Field to sort actions by. Accepts "time" or "label".'
+    description: 'Column to sort the actions table by. Accepts `time` or `label`.'
     default: ''
   sort-dir:
-    description: 'Direction to sort with.'
+    description: 'Sort direction for the actions table. Accepts `asc` or `desc`.'
     default: 'desc'
   workspace-root:
-    description: 'Root of the moon workspace. Defaults to working directory.'
+    description: 'Absolute path to the moon workspace root. Defaults to the working directory.'
     default: ''
 outputs:
   comment-created:
-    description: 'Whether or not the comment was created on the pull request.'
+    description: 'Set to `true` if a comment was successfully posted to the pull request.'
   report:
-    description: 'The generated report.'
+    description: 'The full run report formatted as a markdown string.'
 runs:
   using: 'node24'
   main: 'dist/index.js'

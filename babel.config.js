@@ -1,3 +1,6 @@
 module.exports = {
-	presets: ['moon'],
+	presets: [
+		['@babel/preset-env', { targets: { node: 'current' } }],
+		['@babel/preset-typescript', { allowDeclareFields: true }],
+	],
 };

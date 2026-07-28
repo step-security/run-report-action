@@ -34928,213 +34928,11 @@ function wrappy (fn, cb) {
 
 /***/ }),
 
-/***/ 7395:
+/***/ 1730:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.formatReportToMarkdown = exports.formatTotalTime = exports.createDetailsSection = exports.createCodeBlock = exports.calculateSavingsPercentage = exports.getMoonEnvVars = exports.getCommitInfo = exports.getCommentToken = void 0;
-const core = __importStar(__nccwpck_require__(7484));
-const github = __importStar(__nccwpck_require__(3228));
-const report_1 = __nccwpck_require__(1440);
-function getCommentToken() {
-    return `<!-- moon-run-report: ${core.getInput('matrix') || 'unknown'} -->`;
-}
-exports.getCommentToken = getCommentToken;
-function getCommitInfo() {
-    const { repo, serverUrl, sha: baseSha } = github.context;
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
-    const sha = github.context.payload.pull_request?.head?.sha ?? baseSha;
-    if (!sha || !repo) {
-        return null;
-    }
-    return {
-        sha: String(sha),
-        url: `${serverUrl}/${repo.owner}/${repo.repo}/commit/${sha}`,
-    };
-}
-exports.getCommitInfo = getCommitInfo;
-function getMoonEnvVars() {
-    const env = {};
-    let count = 0;
-    Object.entries(process.env).forEach(([key, value]) => {
-        if ((key.startsWith('MOON_') || key.startsWith('PROTO_')) &&
-            value &&
-            process.env.NODE_ENV !== 'test') {
-            env[key] = value;
-            count += 1;
-        }
-    });
-    if (count === 0) {
-        return null;
-    }
-    return env;
-}
-exports.getMoonEnvVars = getMoonEnvVars;
-function calculateSavingsPercentage(projected, savings) {
-    const base = (0, report_1.getDurationInMillis)(projected);
-    const diff = (0, report_1.getDurationInMillis)(savings);
-    return Math.round((diff / base) * 100);
-}
-exports.calculateSavingsPercentage = calculateSavingsPercentage;
-function createCodeBlock(map) {
-    const code = ['```'];
-    if (Array.isArray(map)) {
-        code.push(...map);
-    }
-    else {
-        Object.entries(map).forEach(([key, value]) => {
-            code.push(`${key} = ${value}`);
-        });
-    }
-    code.push('```');
-    return code;
-}
-exports.createCodeBlock = createCodeBlock;
-function createDetailsSection(title, body) {
-    return [
-        '',
-        `<details><summary><strong>${title}</strong></summary><div>`,
-        '',
-        ...body,
-        '',
-        '</div></details>',
-    ];
-}
-exports.createDetailsSection = createDetailsSection;
-function formatTotalTime({ duration, comparisonEstimate }) {
-    const parts = [`Total time: ${(0, report_1.formatDuration)(duration)}`];
-    if (comparisonEstimate) {
-        parts.push(`Comparison time: ${(0, report_1.formatDuration)(comparisonEstimate.duration)}`);
-        if (comparisonEstimate.percent !== 0) {
-            if (comparisonEstimate.percent > 0 && comparisonEstimate.gain) {
-                parts.push(`Estimated savings: ${(0, report_1.formatDuration)(comparisonEstimate.gain)} (${comparisonEstimate.percent.toFixed(1)}% faster)`);
-            }
-            else if (comparisonEstimate.percent < 0 && comparisonEstimate.loss) {
-                parts.push(`Estimated loss: ${(0, report_1.formatDuration)(comparisonEstimate.loss)} (${Math.abs(comparisonEstimate.percent).toFixed(1)}% slower)`);
-            }
-        }
-    }
-    return parts.join(' | ');
-}
-exports.formatTotalTime = formatTotalTime;
-function formatStatusLabel(status) {
-    switch (status) {
-        case 'aborted':
-            return 'Aborted';
-        case 'cached':
-        case 'cached-from-remote':
-            return 'Cached';
-        case 'failed':
-            return 'Failed';
-        case 'invalid':
-            return 'Invalid';
-        case 'passed':
-            return 'Passed';
-        case 'skipped':
-            return 'Skipped';
-        case 'timed-out':
-            return 'Timed out';
-        case 'running':
-            return 'Running';
-        default:
-            return 'Unknown';
-    }
-}
-// eslint-disable-next-line complexity
-function formatReportToMarkdown(report, { limit, slowThreshold, workspaceRoot }) {
-    const commit = getCommitInfo();
-    const matrix = core.getInput('matrix');
-    const matrixData = matrix ? JSON.parse(matrix) : null;
-    const markdown = [
-        getCommentToken(),
-        '',
-        commit ? `## Run report for [${commit.sha.slice(0, 8)}](${commit.url})` : '## Run report',
-    ];
-    if (matrixData) {
-        markdown[2] += ` \`(${Object.values(matrixData).join(', ')})\``;
-    }
-    if (report.duration) {
-        markdown.push(formatTotalTime(report));
-    }
-    // ACTIONS
-    const tableHeaders = [
-        '|     | Action | Time | Status | Info |',
-        '| :-: | :----- | ---: | :----- | :--- |',
-    ];
-    const overflowRows = [];
-    markdown.push(...tableHeaders);
-    (0, report_1.prepareReportActions)(report, slowThreshold).forEach((action, index) => {
-        const row = `| ${action.icon} | \`${action.label}\` | ${action.time} | ${formatStatusLabel(action.status)} | ${action.comments.join(', ')} |`;
-        if (index < limit) {
-            markdown.push(row);
-        }
-        else {
-            overflowRows.push(row);
-        }
-    });
-    if (overflowRows.length > 0) {
-        markdown.push(`| | And ${overflowRows.length} more... | | | |`, ...createDetailsSection('Expanded report', [...tableHeaders, ...overflowRows]));
-    }
-    // ENVIRONMENT
-    const envVars = getMoonEnvVars();
-    if (matrixData ?? envVars) {
-        const section = [
-            `**OS:** ${process.env.NODE_ENV === 'test' ? 'Test' : process.env.RUNNER_OS ?? 'unknown'}`,
-        ];
-        if (matrixData) {
-            section.push('**Matrix:**', ...createCodeBlock(matrixData));
-        }
-        if (envVars) {
-            section.push('**Variables:**', ...createCodeBlock(envVars));
-        }
-        markdown.push(...createDetailsSection('Environment', section));
-    }
-    // TOUCHED FILES
-    const { touchedFiles = [], changedFiles = [] } = report.context;
-    if (touchedFiles.length > 0) {
-        markdown.push(...createDetailsSection('Touched files', createCodeBlock(touchedFiles.map((file) => `${file.replace(workspaceRoot, '')}`).sort())));
-    }
-    if (changedFiles.length > 0) {
-        markdown.push(...createDetailsSection('Changed files', createCodeBlock(changedFiles.map((file) => `${file.replace(workspaceRoot, '')}`).sort())));
-    }
-    return markdown.join('\n');
-}
-exports.formatReportToMarkdown = formatReportToMarkdown;
-
-
-/***/ }),
-
-/***/ 98:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     var desc = Object.getOwnPropertyDescriptor(m, k);
@@ -35162,19 +34960,179 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.execute = exports.buildReportMarkdown = exports.renderDurationSummary = exports.buildCollapsibleSection = exports.buildCodeFence = exports.computeSavingsPct = exports.collectEnvContext = exports.resolveCommitRef = exports.buildCommentMarker = void 0;
 const fs_1 = __importDefault(__nccwpck_require__(9896));
 const path_1 = __importDefault(__nccwpck_require__(6928));
 const axios_1 = __importStar(__nccwpck_require__(7269));
 const core = __importStar(__nccwpck_require__(7484));
 const github = __importStar(__nccwpck_require__(3228));
 const report_1 = __nccwpck_require__(1440);
-const helpers_1 = __nccwpck_require__(7395);
-async function validateSubscription() {
+function buildCommentMarker() {
+    const matrixKey = core.getInput('matrix') || 'unknown';
+    return `<!-- moon-run-report: ${matrixKey} -->`;
+}
+exports.buildCommentMarker = buildCommentMarker;
+function resolveCommitRef() {
+    const { repo, serverUrl, sha: baseSha } = github.context;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+    const sha = github.context.payload.pull_request?.head?.sha ?? baseSha;
+    if (!sha || !repo)
+        return null;
+    const commitSha = String(sha);
+    return {
+        sha: commitSha,
+        url: `${serverUrl}/${repo.owner}/${repo.repo}/commit/${commitSha}`,
+    };
+}
+exports.resolveCommitRef = resolveCommitRef;
+function collectEnvContext() {
+    const env = {};
+    for (const [key, value] of Object.entries(process.env)) {
+        if ((key.startsWith('MOON_') || key.startsWith('PROTO_')) &&
+            value &&
+            process.env.NODE_ENV !== 'test') {
+            env[key] = value;
+        }
+    }
+    return Object.keys(env).length === 0 ? null : env;
+}
+exports.collectEnvContext = collectEnvContext;
+function computeSavingsPct(projected, savings) {
+    const toMs = ({ secs, nanos }) => secs * 1000 + nanos / 1000000;
+    return Math.round((toMs(savings) / toMs(projected)) * 100);
+}
+exports.computeSavingsPct = computeSavingsPct;
+function buildCodeFence(map) {
+    const lines = ['```'];
+    if (Array.isArray(map)) {
+        lines.push(...map);
+    }
+    else {
+        for (const [key, value] of Object.entries(map)) {
+            lines.push(`${key} = ${String(value)}`);
+        }
+    }
+    lines.push('```');
+    return lines;
+}
+exports.buildCodeFence = buildCodeFence;
+function buildCollapsibleSection(title, body) {
+    const openTag = `<details><summary><strong>${title}</strong></summary><div>`;
+    return ['', openTag, '', ...body, '', '</div></details>'];
+}
+exports.buildCollapsibleSection = buildCollapsibleSection;
+function renderDurationSummary({ duration, comparisonEstimate }) {
+    const segments = [`Total time: ${(0, report_1.formatDuration)(duration)}`];
+    if (comparisonEstimate) {
+        segments.push(`Comparison time: ${(0, report_1.formatDuration)(comparisonEstimate.duration)}`);
+        const { gain, loss, percent } = comparisonEstimate;
+        if (percent > 0 && gain) {
+            segments.push(`Estimated savings: ${(0, report_1.formatDuration)(gain)} (${percent.toFixed(1)}% faster)`);
+        }
+        else if (percent < 0 && loss) {
+            segments.push(`Estimated loss: ${(0, report_1.formatDuration)(loss)} (${Math.abs(percent).toFixed(1)}% slower)`);
+        }
+    }
+    return segments.join(' | ');
+}
+exports.renderDurationSummary = renderDurationSummary;
+function labelForStatus(status) {
+    const labels = {
+        aborted: 'Aborted',
+        cached: 'Cached',
+        'cached-from-remote': 'Cached',
+        failed: 'Failed',
+        invalid: 'Invalid',
+        passed: 'Passed',
+        running: 'Running',
+        skipped: 'Skipped',
+        'timed-out': 'Timed out',
+    };
+    return labels[status] ?? 'Unknown';
+}
+function buildActionsTable(report, limit, slowLimit) {
+    const header = [
+        '|     | Action | Time | Status | Info |',
+        '| :-: | :----- | ---: | :----- | :--- |',
+    ];
+    const mainRows = [];
+    const overflowRows = [];
+    (0, report_1.prepareReportActions)(report, slowLimit).forEach((action, index) => {
+        const row = `| ${action.icon} | \`${action.label}\` | ${action.time} | ${labelForStatus(action.status)} | ${action.comments.join(', ')} |`;
+        if (index < limit) {
+            mainRows.push(row);
+        }
+        else {
+            overflowRows.push(row);
+        }
+    });
+    return { header, mainRows, overflowRows };
+}
+function buildEnvironmentSection(matrixData) {
+    const envVars = collectEnvContext();
+    if (!matrixData && !envVars) {
+        return [];
+    }
+    const section = [
+        `**OS:** ${process.env.NODE_ENV === 'test' ? 'Test' : process.env.RUNNER_OS ?? 'unknown'}`,
+    ];
+    if (matrixData) {
+        section.push('**Matrix:**', ...buildCodeFence(matrixData));
+    }
+    if (envVars) {
+        section.push('**Variables:**', ...buildCodeFence(envVars));
+    }
+    return buildCollapsibleSection('Environment', section);
+}
+function buildChangedFilesSection(report, rootDir) {
+    const lines = [];
+    const { touchedFiles = [], changedFiles = [] } = report.context;
+    if (touchedFiles.length > 0) {
+        lines.push(...buildCollapsibleSection('Touched files', buildCodeFence(touchedFiles.map((f) => f.replace(rootDir, '')).sort())));
+    }
+    if (changedFiles.length > 0) {
+        lines.push(...buildCollapsibleSection('Changed files', buildCodeFence(changedFiles.map((f) => f.replace(rootDir, '')).sort())));
+    }
+    return lines;
+}
+function buildReportMarkdown(report, { limit, slowLimit, rootDir }) {
+    const commit = resolveCommitRef();
+    const matrix = core.getInput('matrix');
+    let matrixData = null;
+    if (matrix) {
+        try {
+            matrixData = JSON.parse(matrix);
+        }
+        catch {
+            core.warning('matrix input is not valid JSON — skipping matrix display.');
+        }
+    }
+    const lines = [
+        buildCommentMarker(),
+        '',
+        commit ? `## Run report for [${commit.sha.slice(0, 8)}](${commit.url})` : '## Run report',
+    ];
+    if (matrixData) {
+        lines[2] += ` \`(${Object.values(matrixData).join(', ')})\``;
+    }
+    if (report.duration) {
+        lines.push(renderDurationSummary(report));
+    }
+    const { header, mainRows, overflowRows } = buildActionsTable(report, limit, slowLimit);
+    lines.push(...header, ...mainRows);
+    if (overflowRows.length > 0) {
+        lines.push(`| | And ${overflowRows.length} more... | | | |`, ...buildCollapsibleSection('Expanded report', [...header, ...overflowRows]));
+    }
+    lines.push(...buildEnvironmentSection(matrixData), ...buildChangedFilesSection(report, rootDir));
+    return lines.join('\n');
+}
+exports.buildReportMarkdown = buildReportMarkdown;
+async function checkSubscription() {
     const eventPath = process.env.GITHUB_EVENT_PATH;
-    let repoPrivate;
+    let isPrivate;
     if (eventPath && fs_1.default.existsSync(eventPath)) {
         const eventData = JSON.parse(fs_1.default.readFileSync(eventPath, 'utf8'));
-        repoPrivate = eventData?.repository?.private;
+        isPrivate = eventData?.repository?.private;
     }
     const upstream = 'moonrepo/run-report-action';
     const action = process.env.GITHUB_ACTION_REPOSITORY;
@@ -35182,11 +35140,11 @@ async function validateSubscription() {
     core.info('');
     core.info('\u001B[1;36mStepSecurity Maintained Action\u001B[0m');
     core.info(`Secure drop-in replacement for ${upstream}`);
-    if (repoPrivate === false)
+    if (isPrivate === false)
         core.info('\u001B[32m✓ Free for public repositories\u001B[0m');
     core.info(`\u001B[36mLearn more:\u001B[0m ${docsUrl}`);
     core.info('');
-    if (repoPrivate === false)
+    if (isPrivate === false)
         return;
     const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
     const body = { action: action || '' };
@@ -35205,112 +35163,98 @@ async function validateSubscription() {
         core.info('Timeout or API not reachable. Continuing to next step.');
     }
 }
-function loadReport(workspaceRoot) {
+function readMoonReport(rootDir) {
     for (const fileName of ['ciReport.json', 'runReport.json']) {
-        const reportPath = path_1.default.join(workspaceRoot, '.moon/cache', fileName);
-        core.debug(`Finding run report at ${reportPath}`);
+        const reportPath = path_1.default.join(rootDir, '.moon/cache', fileName);
+        core.debug(`Searching for run report at ${reportPath}`);
         if (fs_1.default.existsSync(reportPath)) {
-            core.debug('Found!');
+            core.debug('Report found.');
             return JSON.parse(fs_1.default.readFileSync(reportPath, 'utf8'));
         }
     }
     return null;
 }
-async function saveComment(accessToken, markdown) {
+async function postPrComment(token, markdown) {
     const { payload: { pull_request: pr, issue }, repo, } = github.context;
-    let id = pr?.number ?? issue?.number;
-    const octokit = github.getOctokit(accessToken);
-    if (!id) {
-        core.debug('No pull request or issue found from context, trying to find pull requests associated with commit');
-        const { data: pullRequests } = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
+    let issueNum = pr?.number ?? issue?.number;
+    const octokit = github.getOctokit(token);
+    if (!issueNum) {
+        core.debug('No pull request or issue in context, searching by commit');
+        const { data: prs } = await octokit.rest.repos.listPullRequestsAssociatedWithCommit({
             ...repo,
             commit_sha: github.context.sha,
         });
-        id = pullRequests[0]?.number;
+        issueNum = prs[0]?.number;
     }
-    if (!id) {
-        core.warning('No pull request or issue found, will not add a comment.');
+    if (!issueNum) {
+        core.warning('No pull request or issue found, skipping comment.');
         return;
     }
     const { data: comments } = await octokit.rest.issues.listComments({
         ...repo,
-        issue_number: id,
+        issue_number: issueNum,
     });
-    const commentToken = (0, helpers_1.getCommentToken)();
-    const existingComment = comments.find((comment) => comment.body?.includes(commentToken));
-    if (existingComment) {
-        core.debug(`Updating existing comment #${existingComment.id}`);
-        await octokit.rest.issues.updateComment({
-            ...repo,
-            body: markdown,
-            comment_id: existingComment.id,
-        });
+    const marker = buildCommentMarker();
+    const existing = comments.find((c) => c.body?.includes(marker));
+    if (existing) {
+        core.debug(`Updating existing comment #${existing.id}`);
+        await octokit.rest.issues.updateComment({ ...repo, body: markdown, comment_id: existing.id });
     }
     else {
         core.debug('Creating a new comment');
-        await octokit.rest.issues.createComment({
-            ...repo,
-            body: markdown,
-            issue_number: id,
-        });
+        await octokit.rest.issues.createComment({ ...repo, body: markdown, issue_number: issueNum });
     }
     core.debug(`Comment body:\n\n${markdown}`);
 }
-async function saveSummary(markdown) {
+async function writeJobSummary(markdown) {
     await core.summary.addRaw(markdown).write();
 }
-async function run() {
+async function execute() {
     try {
-        await validateSubscription();
-        const accessToken = core.getInput('access-token');
+        await checkSubscription();
+        const token = core.getInput('access-token');
         const limit = Number(core.getInput('limit'));
-        const skipComment = core.getBooleanInput('skip-comment');
-        const slowThreshold = Number(core.getInput('slow-threshold'));
-        const workspaceRoot = core.getInput('workspace-root') || process.env.GITHUB_WORKSPACE || process.cwd();
-        core.debug(`Using workspace root ${workspaceRoot}`);
-        if (!accessToken) {
+        const omitComment = core.getBooleanInput('skip-comment');
+        const slowLimit = Number(core.getInput('slow-threshold'));
+        const rootDir = core.getInput('workspace-root') || process.env.GITHUB_WORKSPACE || process.cwd();
+        core.debug(`Workspace root: ${rootDir}`);
+        if (!token) {
             throw new Error('An `access-token` input is required.');
         }
-        const report = loadReport(workspaceRoot);
-        // `moon ci` may have run, but nothing may be affected,
-        // so instead of throwing an error, just log a message.
+        const report = readMoonReport(rootDir);
         if (!report) {
-            core.warning('Run report does not exist, has `moon ci` or `moon run` ran?');
+            core.warning('Run report not found. Has `moon ci` or `moon run` executed?');
             return;
         }
-        // Sort the actions in the report
-        const sortBy = core.getInput('sort-by');
-        const sortDir = core.getInput('sort-dir') || 'desc';
-        if (sortBy) {
-            (0, report_1.sortReport)(report, sortBy, sortDir);
+        const orderBy = core.getInput('sort-by');
+        const orderDir = core.getInput('sort-dir') || 'desc';
+        if (orderBy) {
+            (0, report_1.sortReport)(report, orderBy, orderDir);
         }
-        // Format the report into markdown
-        const markdown = (0, helpers_1.formatReportToMarkdown)(report, { limit, slowThreshold, workspaceRoot });
+        const markdown = buildReportMarkdown(report, { limit, rootDir, slowLimit });
         core.setOutput('report', markdown);
-        if (skipComment) {
-            core.debug('Skipping comment creation');
+        if (omitComment) {
+            core.debug('Comment creation skipped');
         }
         else {
-            // Create the comment (does not work in forks)
             try {
-                await saveComment(accessToken, markdown);
+                await postPrComment(token, markdown);
             }
             catch (error) {
                 core.warning(String(error));
-                core.notice('\nFailed to create comment on pull request. Perhaps this is ran in a fork?\n');
+                core.notice('\nFailed to post comment on pull request. Running from a fork?\n');
                 core.info(markdown);
             }
         }
-        // Create an action summary (does work in forks)
-        await saveSummary(markdown);
-        core.setOutput('comment-created', skipComment ? 'false' : 'true');
+        await writeJobSummary(markdown);
+        core.setOutput('comment-created', omitComment ? 'false' : 'true');
     }
     catch (error) {
         core.setOutput('comment-created', 'false');
         core.setFailed(error.message);
     }
 }
-void run();
+exports.execute = execute;
 
 
 /***/ }),
@@ -43410,12 +43354,18 @@ module.exports = /*#__PURE__*/JSON.parse('{"application/1d-interleaved-parityfec
 /******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
 /******/ 	
 /************************************************************************/
-/******/ 	
-/******/ 	// startup
-/******/ 	// Load entry module and return exports
-/******/ 	// This entry module is referenced by other modules so it can't be inlined
-/******/ 	var __webpack_exports__ = __nccwpck_require__(98);
-/******/ 	module.exports = __webpack_exports__;
-/******/ 	
+var __webpack_exports__ = {};
+// This entry need to be wrapped in an IIFE because it need to be in strict mode.
+(() => {
+"use strict";
+var exports = __webpack_exports__;
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const main_1 = __nccwpck_require__(1730);
+void (0, main_1.execute)();
+
+})();
+
+module.exports = __webpack_exports__;
 /******/ })()
 ;

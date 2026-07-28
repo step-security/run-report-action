@@ -1,0 +1,31 @@
+name: 'test'
+on:
+  push:
+    branches:
+      - 'main'
+  pull_request:
+jobs:
+  ci:
+    name: 'Check Lint and Run Test'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          cache: npm
+
+      - name: Install packages
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
