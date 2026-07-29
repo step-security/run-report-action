@@ -1,0 +1,39 @@
+name: 'moon - CI run reports'
+author: 'step-security'
+description: 'Publishes moon CI run results as a pull request comment and workflow summary.'
+inputs:
+  access-token:
+    description: 'GitHub token used to post run report comments on pull requests.'
+    required: true
+  limit:
+    description: 'Maximum number of actions to show in the report table before overflow.'
+    default: '20'
+  matrix:
+    description: 'Job matrix data as a JSON string, used to distinguish parallel builds.'
+    default: ''
+  skip-comment:
+    description: 'Set to true to skip PR comment creation. Pairs well with the `report` output.'
+    default: 'false'
+  slow-threshold:
+    description: 'Duration in seconds beyond which an action is marked as slow.'
+    default: '120'
+  sort-by:
+    description: 'Column to sort the actions table by. Accepts `time` or `label`.'
+    default: ''
+  sort-dir:
+    description: 'Sort direction for the actions table. Accepts `asc` or `desc`.'
+    default: 'desc'
+  workspace-root:
+    description: 'Absolute path to the moon workspace root. Defaults to the working directory.'
+    default: ''
+outputs:
+  comment-created:
+    description: 'Set to `true` if a comment was successfully posted to the pull request.'
+  report:
+    description: 'The full run report formatted as a markdown string.'
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
+branding:
+  icon: 'moon'
+  color: 'purple'
