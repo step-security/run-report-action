@@ -24,7 +24,7 @@ export function buildCommentMarker(): string {
 export function resolveCommitRef(): { sha: string; url: string } | null {
 	const { repo, serverUrl, sha: baseSha } = github.context;
 
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+	 
 	const sha = github.context.payload.pull_request?.head?.sha ?? baseSha;
 
 	if (!sha || !repo) return null;
@@ -271,7 +271,7 @@ async function checkSubscription(): Promise<void> {
 				`\u001B[1;31mThis action requires a StepSecurity subscription for private repositories.\u001B[0m`,
 			);
 			core.error(`\u001B[31mLearn how to enable a subscription: ${docsUrl}\u001B[0m`);
-			// eslint-disable-next-line no-process-exit, unicorn/no-process-exit
+			// eslint-disable-next-line unicorn/no-process-exit
 			process.exit(1);
 		}
 		core.info('Timeout or API not reachable. Continuing to next step.');
@@ -324,7 +324,7 @@ async function postPrComment(token: string, markdown: string): Promise<void> {
 	});
 
 	const marker = buildCommentMarker();
-	const existing = comments.find((c) => c.body?.includes(marker));
+	const existing = comments.find((c: { body?: null | string; id: number }) => c.body?.includes(marker));
 
 	if (existing) {
 		core.debug(`Updating existing comment #${existing.id}`);
