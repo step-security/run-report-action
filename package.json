@@ -21,7 +21,7 @@
     "@actions/core": "^2.0.0",
     "@actions/github": "^8.0.0",
     "@moonrepo/report": "^2.0.1",
-    "@moonrepo/types": "^2.1.0",
+    "@moonrepo/types": "^2.4.5",
     "axios": "^1.18.1"
   },
   "devDependencies": {
